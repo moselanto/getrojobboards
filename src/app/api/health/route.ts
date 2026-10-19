@@ -1,0 +1,2 @@
+import { NextResponse } from "next/server";
+export async function GET(){return NextResponse.json({status:"ok",service:"getro-community-recreation",timestamp:new Date().toISOString(),databaseConfigured:Boolean(process.env.DATABASE_URL),emailConfigured:Boolean(process.env.EMAIL_FROM&&process.env.EMAIL_API_KEY)});}

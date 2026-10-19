@@ -27,6 +27,7 @@ export default function Companies() {
   const [result, setResult] = useState<CompanyResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -58,12 +59,12 @@ export default function Companies() {
 
     loadCompanies();
     return () => controller.abort();
-  }, [q, loc, page]);
+  }, [q, loc, page, retry]);
 
   return <><header className="topbar"><div className="shell nav"><a className="brand" href="/"><span className="brand-mark">C</span> community<span style={{color:"var(--blue)"}}>jobs</span></a><nav className="navlinks"><a href="/">Jobs</a><a className="active" href="/companies">Companies</a></nav><div className="navright"><a className="button" href="/">Browse jobs</a><a className="button primary" href="/join-talent-network">Join talent network ↗</a></div></div></header>
   <main className="shell"><div className="pagehead"><div className="eyebrow">Meet the teams behind the work</div><h1>Explore companies</h1><p className="muted">Discover employers and explore their published opportunities.</p><div className="searchbox" style={{gridTemplateColumns:"1.4fr 1fr"}}><div className="searchfield"><span>⌕</span><input aria-label="Search companies" placeholder="Search by name or keyword" value={q} onChange={e=>{setQ(e.target.value);setPage(1)}}/></div><div className="searchfield"><span>⌖</span><input aria-label="Company location" placeholder="Location" value={loc} onChange={e=>{setLoc(e.target.value);setPage(1)}}/></div></div></div>
   <div className="muted" aria-live="polite">{loading ? "Loading companies…" : result ? `${result.pagination.total} companies` : "Company directory"}</div>
-  {error && <div className="notice" role="alert">{error} <button className="button" onClick={()=>setPage(p=>p)}>Try again</button></div>}
+  {error && <div className="notice" role="alert">{error} <button className="button" onClick={()=>setRetry(n=>n+1)}>Try again</button></div>}
   {!error && !loading && result?.data.length === 0 && <div className="empty"><h3>No companies found</h3><p className="muted">Try another keyword or location.</p><button className="button" onClick={()=>{setQ("");setLoc("");setPage(1)}}>Clear search</button></div>}
   <div className="companygrid" aria-busy={loading}>{result?.data.map(c=><article className="companycard" key={c.id}><div className="jobrow">{c.logoUrl ? <img src={c.logoUrl} alt="" className="company-logo" style={{objectFit:"contain"}}/> : <div className="company-logo">{c.name.slice(0,1).toUpperCase()}</div>}<div><h3 style={{margin:"2px 0 5px"}}>{c.name}</h3>{c.stage&&<span className="tag blue">{c.stage}</span>}</div></div>{c.description&&<p className="muted" style={{lineHeight:1.65,minHeight:66}}>{c.description}</p>}<div className="jobmeta">{c.location&&<span>⌖ {c.location}</span>}{c.industry&&<span>▧ {c.industry}</span>}</div><div style={{borderTop:"1px solid var(--line)",marginTop:16,paddingTop:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}><span className="muted">{c._count.jobs} published {c._count.jobs===1?"role":"roles"}</span><a href={`/?company=${encodeURIComponent(c.name)}`} style={{color:"var(--blue)",fontWeight:700}}>View jobs →</a></div></article>)}</div>
   {result && result.pagination.pages > 1 && <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:10,margin:"24px 0 48px"}}><button className="button" disabled={page<=1||loading} onClick={()=>setPage(p=>p-1)}>← Previous</button><span className="muted">Page {page} of {result.pagination.pages}</span><button className="button" disabled={page>=result.pagination.pages||loading} onClick={()=>setPage(p=>p+1)}>Next →</button></div>}

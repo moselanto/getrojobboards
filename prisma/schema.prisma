@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  CANDIDATE
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  EXPIRED
+  ARCHIVED
+}
+
+enum WorkArrangement {
+  REMOTE
+  HYBRID
+  ON_SITE
+  UNSPECIFIED
+}
+
+model User {
+  id                 String            @id @default(cuid())
+  email              String            @unique
+  name               String?
+  role               UserRole          @default(CANDIDATE)
+  emailVerifiedAt    DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  candidateProfile   CandidateProfile?
+  savedSearches      SavedSearch[]
+  alertSubscriptions AlertSubscription[]
+  auditEvents        AdminAuditEvent[] @relation("AuditActor")
+}
+
+model CandidateProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  headline           String?
+  summary            String?
+  skills             String[] @default([])
+  location           String?
+  workPreferences    String[] @default([])
+  websiteUrl         String?
+  linkedinUrl        String?
+  consentAt          DateTime?
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  websiteUrl  String?
+  logoUrl     String?
+  industry    String?
+  stage       String?
+  location    String?
+  jobs        Job[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([name])
+}
+
+model Job {
+  id                 String           @id @default(cuid())
+  title              String
+  slug               String           @unique
+  description        String
+  location           String?
+  locations          String[]         @default([])
+  arrangement        WorkArrangement  @default(UNSPECIFIED)
+  employmentType     String?
+  seniority          String?
+  salaryMin          Int?
+  salaryMax          Int?
+  salaryCurrency     String?
+  salaryPeriod       String?
+  status             JobStatus        @default(DRAFT)
+  applyUrl           String
+  sourceName         String?
+  sourceUrl          String?
+  sourceExternalId   String?
+  postedAt           DateTime?
+  lastVerifiedAt     DateTime?
+  expiresAt          DateTime?
+  companyId          String
+  company            Company          @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  tags               JobTag[]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  @@index([status, postedAt])
+  @@index([location, arrangement, seniority])
+  @@unique([sourceName, sourceExternalId])
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  jobs      JobTag[]
+}
+
+model JobTag {
+  jobId String
+  tagId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  tag   Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  @@id([jobId, tagId])
+}
+
+model SavedSearch {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  criteria  Json
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alerts    AlertSubscription[]
+}
+
+model AlertSubscription {
+  id             String   @id @default(cuid())
+  userId         String
+  savedSearchId  String?
+  email          String
+  frequency      String   @default("DAILY")
+  verifiedAt     DateTime?
+  unsubscribedAt DateTime?
+  createdAt      DateTime @default(now())
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  savedSearch     SavedSearch? @relation(fields: [savedSearchId], references: [id], onDelete: SetNull)
+  deliveries      AlertDelivery[]
+  @@index([email, unsubscribedAt])
+}
+
+model AlertDelivery {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  windowKey      String
+  status         String   @default("PENDING")
+  attempts       Int      @default(0)
+  sentAt         DateTime?
+  errorMessage   String?
+  subscription   AlertSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  @@unique([subscriptionId, windowKey])
+}
+
+model AdminAuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+  @@index([entityType, entityId, createdAt])
+}

@@ -9,8 +9,9 @@ This is a working scaffold, not a production release. Do not use real candidate 
 - Demo company directory and job detail route.
 - Talent-network form prototype with explicit non-persistence notice.
 - Prisma data model for users, candidate profiles, companies, jobs, tags, saved searches, alert subscriptions, delivery logs and admin audit events.
-- Health endpoint and environment-variable example.
-- Basic HTTP security headers.
+- Public database-backed GET API routes for published jobs and company directory, with validated query parameters, pagination, controlled field selection and generic service-unavailable errors.
+- Shared Zod schemas for job, company and candidate input validation.
+- Health endpoint, environment-variable example, basic HTTP security headers.
 - Admin route gate redirects administrative paths to a setup notice until authentication exists.
 
 ## Release blockers

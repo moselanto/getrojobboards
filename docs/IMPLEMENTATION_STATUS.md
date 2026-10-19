@@ -5,11 +5,12 @@ This is a working scaffold, not a production release. Do not use real candidate 
 ## Implemented in the feature branch
 - Initial requirements audit and architecture recommendation.
 - Next.js/TypeScript project manifest and application shell.
-- Responsive demo jobs page with client-side keyword/location search, filters, sort and pagination.
-- Demo company directory and job detail route.
+- Responsive demo jobs page with client-side keyword/location search, filters, sort and pagination (still awaiting API integration).
+- Company directory connected to the database API with keyword/location search, pagination, loading/error/empty states.
+- Job detail route backed by an individual published-job API endpoint (the page itself still awaits API integration).
 - Talent-network form prototype with explicit non-persistence notice.
 - Prisma data model for users, candidate profiles, companies, jobs, tags, saved searches, alert subscriptions, delivery logs and admin audit events.
-- Public database-backed GET API routes for published jobs and company directory, with validated query parameters, pagination, controlled field selection and generic service-unavailable errors.
+- Public database-backed GET API routes for published job search, individual published job details (by ID or slug), and company directory, with validated query parameters, pagination, controlled field selection and generic service-unavailable errors.
 - Shared Zod schemas for job, company and candidate input validation.
 - Health endpoint, environment-variable example, basic HTTP security headers.
 - Admin route gate redirects administrative paths to a setup notice until authentication exists.
@@ -18,7 +19,7 @@ This is a working scaffold, not a production release. Do not use real candidate 
 1. Install dependencies and run a clean build, typecheck, lint and automated tests in CI.
 2. Add authentication provider, email verification, session security and server-side role-based authorization.
 3. Implement database migrations and safe admin bootstrap; never expose admin routes without auth.
-4. Replace demo data with repository-backed queries and safe seed fixtures marked as demo.
+4. Connect the jobs list and job-detail page to the database APIs; add safe seed fixtures clearly marked as demo.
 5. Implement validated job/company CRUD, moderation, import preview and audit logging.
 6. Implement candidate persistence, privacy/consent records, export/deletion and access controls.
 7. Implement saved-search persistence, queue worker, email provider adapter, delivery retries, deduplication and unsubscribe.
